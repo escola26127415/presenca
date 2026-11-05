@@ -1,0 +1,543 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Presença Escolar</title>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg:#f3f5f7;--card:#fff;--tx:#1d2733;--mut:#64748b;--line:#e2e8f0;--pri:#0f6b5c;--pri2:#e3f2ee;--ok:#15803d;--okbg:#dcfce7;--warn:#a85a06;--warnbg:#fef3c7;--bad:#b91c1c;--badbg:#fee2e2;--wa:#1c9b4f}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--tx);font-size:15px}
+header{background:var(--pri);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+header h1{font-size:17px;margin:0}header small{opacity:.85;font-size:13px}
+nav{display:flex;gap:2px;overflow-x:auto;background:#fff;border-bottom:1px solid var(--line);padding:0 8px;position:sticky;top:0;z-index:5}
+nav button{border:0;background:none;padding:12px;font:inherit;color:var(--mut);border-bottom:3px solid transparent;white-space:nowrap;cursor:pointer}
+nav button.on{color:var(--pri);border-color:var(--pri);font-weight:600}
+main{max-width:1000px;margin:0 auto;padding:16px}
+section{display:none}section.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+.card h2{font-size:16px;margin:0 0 10px}.card h3{font-size:15px;margin:0 0 8px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--line);background:#fff;color:var(--tx);border-radius:8px;padding:9px 13px;font:inherit;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:#f8fafc}.btn.pri{background:var(--pri);border-color:var(--pri);color:#fff}.btn.pri:hover{filter:brightness(1.08)}
+.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}.btn.wa.sent{background:#fff;color:var(--wa)}
+.btn.danger{color:var(--bad);border-color:#fecaca}.btn.sm{padding:5px 9px;font-size:13px}.btn:disabled{opacity:.45;cursor:not-allowed}
+input,select,textarea{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--tx);max-width:100%}
+textarea{width:100%;min-height:80px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut);flex:1;min-width:150px}
+label.f input,label.f select,label.f textarea{color:var(--tx);font-size:15px}
+.mut{color:var(--mut);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(95px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat b{display:block;font-size:24px}.stat span{font-size:13px;color:var(--mut)}
+.stat.ok b{color:var(--ok)}.stat.warn b{color:var(--warn)}.stat.bad b{color:var(--bad)}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--mut)}
+.tw{overflow-x:auto}
+.tag{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600}
+.tag.P{background:var(--okbg);color:var(--ok)}.tag.A{background:var(--warnbg);color:var(--warn)}.tag.F{background:var(--badbg);color:var(--bad)}.tag.J{background:#e0e7ff;color:#3730a3}
+@media (max-width:600px){#bCam,#bFoto{flex:1;justify-content:center;padding:14px;font-size:16px}}
+#reader{width:100%;max-width:420px;margin:0 auto;border-radius:12px;overflow:hidden}
+#fb{border-radius:12px;padding:18px;text-align:center;margin-top:12px;display:none}
+#fb.P{display:block;background:var(--okbg);color:var(--ok)}#fb.A{display:block;background:var(--warnbg);color:var(--warn)}#fb.err,#fb.dup{display:block;background:var(--badbg);color:var(--bad)}#fb.dup{background:#e0e7ff;color:#3730a3}
+#fb .n{font-size:22px;font-weight:700}#fb .s{font-size:16px;margin-top:4px}
+#fb .m{margin-top:12px;font-size:18px;color:var(--tx);background:rgba(255,255,255,.75);border-radius:10px;padding:12px;display:none}
+#fb .al{margin-top:10px;font-size:17px;font-weight:700;background:var(--bad);color:#fff;border-radius:10px;padding:12px;display:none}
+.res{border:1px solid var(--line);border-radius:8px;margin-top:6px;max-height:280px;overflow:auto}
+.res div{padding:10px;border-bottom:1px solid var(--line);cursor:pointer}.res div:hover{background:var(--pri2)}
+details summary{cursor:pointer;font-weight:600;padding:4px 0}
+.alert{background:var(--badbg);color:var(--bad);font-weight:700}
+.warnbox{background:var(--warnbg);color:var(--warn);border-radius:8px;padding:10px;font-size:14px;margin-bottom:12px}
+#modal{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;align-items:flex-start;justify-content:center;z-index:20;overflow:auto;padding:20px 12px}
+#modal.on{display:flex}#modal .box{background:#fff;border-radius:14px;max-width:640px;width:100%;padding:18px}
+#printArea{display:none}
+@media (max-width:600px){main{padding:10px}.hide-m{display:none}}
+@media print{
+ body{background:#fff}body>*:not(#printArea){display:none!important}#printArea{display:block;font-size:12px;color:#000}
+ #printArea table{font-size:11px}#printArea th,#printArea td{border:1px solid #999;padding:4px}
+ #printArea h1{font-size:16px;margin:0 0 4px}#printArea h2{font-size:13px;margin:12px 0 4px}
+ .cards{display:grid;grid-template-columns:repeat(2,85mm);gap:4mm;justify-content:center}
+ .ccard{width:85mm;height:54mm;border:1px dashed #888;border-radius:3mm;padding:3mm;display:flex;gap:3mm;align-items:center;page-break-inside:avoid;break-inside:avoid}
+ .ccard .q{width:32mm;height:32mm;flex:none}.ccard .q img,.ccard .q canvas{width:32mm!important;height:32mm!important}
+ .ccard .t{font-size:10px;line-height:1.35}.ccard .t b{font-size:12px;display:block;margin:2px 0}.ccard .e{font-size:8px;text-transform:uppercase;color:#333}
+ @page{size:A4;margin:10mm}
+}
+</style>
+</head>
+<body>
+<header>
+ <div><h1 id="hEscola">Presença Escolar</h1><small id="hData"></small></div>
+ <small id="hBackup"></small>
+</header>
+<nav id="tabs">
+ <button data-t="portaria" class="on">Portaria</button>
+ <button data-t="dia">Lista do dia</button>
+ <button data-t="busca">Busca ativa</button>
+ <button data-t="alunos">Estudantes</button>
+ <button data-t="config">Configurações</button>
+</nav>
+<main>
+
+<!-- PORTARIA -->
+<section id="s-portaria" class="on">
+ <div id="bkLembrete"></div>
+ <div class="stats">
+  <div class="stat ok"><b id="pPres">0</b><span>no horário</span></div>
+  <div class="stat warn"><b id="pAtr">0</b><span>atrasados</span></div>
+  <div class="stat"><b id="pFalt">0</b><span>ainda não registrados</span></div>
+ </div>
+ <div class="card">
+  <div class="row" style="justify-content:space-between">
+   <h2 style="margin:0">Leitura do QR Code</h2>
+   <div class="row"><button class="btn pri" id="bCam" onclick="toggleCam()">Ligar câmera</button><label class="btn" id="bFoto">Ler por foto<input type="file" accept="image/*" capture="environment" style="display:none" onchange="lerFoto(this)"></label></div>
+  </div>
+  <p class="mut" id="horaInfo"></p>
+  <div id="camAviso"></div><div id="reader"></div><div id="readerFile" style="display:none"></div>
+  <div id="fb"><div class="n"></div><div class="s"></div><div class="m"></div><div class="al"></div></div>
+ </div>
+ <div class="card">
+  <h3>Registro manual (sem carteirinha)</h3>
+  <input id="busca" placeholder="Digite nome ou matrícula" style="width:100%" oninput="buscarManual()" autocomplete="off">
+  <div class="res" id="resBusca" style="display:none"></div>
+ </div>
+ <div class="card">
+  <h3>Últimas entradas</h3>
+  <div class="tw"><table><thead><tr><th>Hora</th><th>Estudante</th><th class="hide-m">Turma</th><th>Situação</th><th></th></tr></thead><tbody id="ultimas"></tbody></table></div>
+ </div>
+</section>
+
+<!-- DIA -->
+<section id="s-dia">
+ <div class="card">
+  <div class="row">
+   <label class="f">Data<input type="date" id="diaData" onchange="renderDia()"></label>
+   <label class="f">Turma<select id="diaTurma" onchange="renderDia()"></select></label>
+  </div>
+ </div>
+ <div class="stats" id="diaStats"></div>
+ <div id="diaAviso"></div>
+ <div class="card">
+  <div class="row" style="justify-content:space-between;margin-bottom:8px">
+   <h2 style="margin:0">Mensagens de WhatsApp</h2>
+   <div class="row">
+    <button class="btn wa" onclick="enviarProximo()">Enviar próxima pendente</button>
+    <button class="btn" onclick="imprimirDia()">Imprimir</button>
+    <button class="btn" onclick="csvDia()">Exportar CSV</button>
+   </div>
+  </div>
+  <p class="mut" id="filaInfo"></p>
+ </div>
+ <div class="card"><h2>Atrasados</h2><div class="tw"><table><tbody id="tAtr"></tbody></table></div></div>
+ <div class="card"><h2>Faltosos</h2><div class="tw"><table><tbody id="tFal"></tbody></table></div></div>
+ <div class="card"><details><summary id="sumPres">Presentes no horário</summary><div class="tw"><table><tbody id="tPres"></tbody></table></div></details></div>
+</section>
+
+<!-- BUSCA ATIVA -->
+<section id="s-busca">
+ <div class="card">
+  <div class="row">
+   <label class="f">De<input type="date" id="bIni" onchange="renderBusca()"></label>
+   <label class="f">Até<input type="date" id="bFim" onchange="renderBusca()"></label>
+   <label class="f">Turma<select id="bTurma" onchange="renderBusca()"></select></label>
+  </div>
+  <div class="row" style="margin-top:10px">
+   <button class="btn sm" onclick="periodo('semana')">Esta semana</button>
+   <button class="btn sm" onclick="periodo('semanaAnt')">Semana passada</button>
+   <button class="btn sm" onclick="periodo('mes')">Este mês</button>
+   <span style="flex:1"></span>
+   <button class="btn pri" onclick="imprimirSemanal()">Imprimir relatório</button>
+  </div>
+ </div>
+ <div class="stats" id="bStats"></div>
+ <div class="card">
+  <h2>Estudantes com atrasos ou faltas</h2>
+  <p class="mut" id="bInfo"></p>
+  <div class="tw"><table><thead><tr><th>Estudante</th><th class="hide-m">Turma</th><th>Atrasos</th><th>Faltas</th><th class="hide-m">Medidas</th><th></th></tr></thead><tbody id="tBusca"></tbody></table></div>
+ </div>
+</section>
+
+<!-- ESTUDANTES -->
+<section id="s-alunos">
+ <div class="card">
+  <h2>Importar lista</h2>
+  <p class="mut">Cole ou envie um CSV com as colunas <b>matrícula; nome; turma; responsável; telefone</b> (com ou sem cabeçalho; separado por ponto e vírgula, vírgula ou tabulação). No Excel: Salvar como → CSV. Matrículas já cadastradas são atualizadas.</p>
+  <textarea id="csvIn" placeholder="123456;Ana Clara Souza;1º A;Maria Souza;81999998888"></textarea>
+  <div class="row" style="margin-top:8px">
+   <button class="btn pri" onclick="importar()">Importar texto colado</button>
+   <label class="btn">Enviar arquivo CSV<input type="file" accept=".csv,.txt" style="display:none" onchange="importarArquivo(this)"></label>
+   <button class="btn" onclick="editarAluno()">+ Cadastrar um estudante</button>
+   <button class="btn" id="bExemplo" onclick="exemplo()">Carregar exemplo</button>
+  </div>
+ </div>
+ <div class="card">
+  <div class="row" style="justify-content:space-between;margin-bottom:8px">
+   <h2 style="margin:0" id="aTitulo">Estudantes</h2>
+   <button class="btn pri" onclick="imprimirCarteirinhas()">Imprimir carteirinhas (filtro atual)</button>
+  </div>
+  <div class="row" style="margin-bottom:8px">
+   <input id="aBusca" placeholder="Buscar" oninput="renderAlunos()" style="flex:1">
+   <select id="aTurma" onchange="renderAlunos()"></select>
+  </div>
+  <div class="tw"><table><thead><tr><th>Matrícula</th><th>Nome</th><th>Turma</th><th class="hide-m">Responsável / telefone</th><th></th></tr></thead><tbody id="tAlunos"></tbody></table></div>
+ </div>
+</section>
+
+<!-- CONFIG -->
+<section id="s-config">
+ <div class="card">
+  <h2>Escola e horário</h2>
+  <div class="row">
+   <label class="f">Nome da escola<input id="cEscola"></label>
+   <label class="f">Início da entrada<input type="time" id="cEntrada"></label>
+   <label class="f">Fim da entrada (no horário até)<input type="time" id="cFim"></label>
+   <label class="f">Tolerância até<input type="time" id="cTolAte"></label>
+   <label class="f">Entrada na 2ª aula<input type="time" id="cAula2"></label>
+  </div>
+  <label class="row" style="margin-top:8px;font-size:14px"><input type="checkbox" id="cTolAtr"> Contar chegada na tolerância como atraso (busca ativa e WhatsApp)</label>
+  <div class="row" style="margin-top:8px">
+   <label class="f">Alertar com mais de … atrasos no período<input type="number" min="0" id="cLim"></label>
+  </div>
+ </div>
+ <div class="card">
+  <h2>Modelos de mensagem</h2>
+  <p class="mut">Campos: {responsavel} {estudante} {turma} {data} {hora} {escola} {aula2}. Na busca ativa também: {atrasos} {faltas} {periodo}.</p>
+  <label class="f">Atraso<textarea id="cMsgA"></textarea></label>
+  <label class="f" style="margin-top:8px">Falta<textarea id="cMsgF"></textarea></label>
+  <label class="f" style="margin-top:8px">Busca ativa (contato por frequência)<textarea id="cMsgB"></textarea></label>
+ </div>
+ <div class="card">
+  <h2>Mensagem na tela da portaria</h2>
+  <p class="mut">Aparece para o estudante logo após a leitura. A saudação (bom dia / boa tarde / boa noite) e o primeiro nome entram automaticamente.</p>
+  <label class="f">Frases do dia (uma por linha; sorteadas a cada leitura)<textarea id="cFrases" style="min-height:160px"></textarea></label>
+  <div class="row" style="margin-top:8px">
+   <label class="f">Alertar a partir de … atrasos na semana<input type="number" min="0" id="cSemA"></label>
+   <label class="f">Alertar a partir de … faltas na semana<input type="number" min="0" id="cSemF"></label>
+  </div>
+  <p class="mut">Use 0 para desligar o alerta daquele tipo. A semana conta de segunda até hoje.</p>
+  <label class="f" style="margin-top:8px">Texto do alerta (campos: {nome} {atrasos} {faltas})<textarea id="cMsgAl"></textarea></label>
+  <div class="row" style="margin-top:10px"><button class="btn pri" onclick="salvarCfg()">Salvar configurações</button></div>
+ </div>
+ <div class="card">
+  <h2>Backup no aparelho</h2>
+  <p class="mut">Os dados ficam neste navegador, neste aparelho. Se o celular for perdido, formatado ou o navegador for limpo, só sobra o que estiver em backup.</p>
+  <p class="mut" id="persistInfo"></p>
+  <div class="row">
+   <label class="f">Lembrar do backup a partir de<input type="time" id="cHoraBk"></label>
+  </div>
+  <div class="row" style="margin-top:8px">
+   <button class="btn pri" onclick="compartilharBackup()">Enviar backup (Drive / WhatsApp)</button>
+   <button class="btn" onclick="exportar()">Baixar backup</button>
+   <label class="btn">Restaurar backup<input type="file" accept=".json" style="display:none" onchange="restaurar(this)"></label>
+   <button class="btn danger" onclick="apagarTudo()">Apagar todos os dados</button>
+  </div>
+ </div>
+ <div class="card">
+  <h2>Cópia automática na planilha Google</h2>
+  <p class="mut">Cada leitura é enviada para uma planilha da escola e uma cópia completa dos dados fica guardada nela. Se o celular quebrar, use "Restaurar da nuvem" em outro aparelho. Sem internet, o app guarda e envia depois. Use uma conta Google institucional da escola.</p>
+  <div class="row">
+   <label class="f" style="min-width:260px">Endereço do app da planilha (termina em /exec)<input id="cUrl" placeholder="https://script.google.com/macros/s/.../exec"></label>
+   <label class="f">Chave de acesso<input id="cChave" placeholder="a mesma do script"></label>
+  </div>
+  <p class="mut" id="nuvemInfo" style="margin-top:8px"></p>
+  <div class="row" style="margin-top:8px">
+   <button class="btn pri" onclick="salvarNuvem()">Salvar e testar</button>
+   <button class="btn" onclick="sincronizar(true)">Sincronizar agora</button>
+   <button class="btn" onclick="restaurarNuvem()">Restaurar da nuvem</button>
+  </div>
+ </div>
+</section>
+</main>
+
+<div id="modal" onclick="if(event.target===this)fecharModal()"><div class="box" id="mBox"></div></div>
+<div id="printArea"></div>
+
+<script>
+const KEY='presenca_escolar_v1';
+const DEF={escola:'EREM Olinto Victor',entrada:'07:00',fimEntrada:'07:30',tolAte:'07:45',aula2:'08:20',tolAtraso:false,limite:3,ultimoBackup:'',horaBackup:'12:00',sheetUrl:'',sheetChave:'',
+ msgA:'Olá, {responsavel}. A {escola} informa que o(a) estudante {estudante} ({turma}) chegou atrasado(a) no dia {data}, às {hora}, após o horário de tolerância, e só pôde entrar na 2ª aula ({aula2}). Contamos com seu apoio para a pontualidade. Gestão escolar.',
+ msgF:'Olá, {responsavel}. A {escola} informa que o(a) estudante {estudante} ({turma}) não compareceu à escola no dia {data}. Se houver algum motivo, por favor entre em contato com a escola. Gestão escolar.',
+ semA:2,semF:1,
+ msgAl:'{nome}, nesta semana você já tem {atrasos} atraso(s) e {faltas} falta(s). Procure a coordenação hoje. Contamos com você!',
+ frases:['Que hoje seja um ótimo dia de aprendizado!','Cada dia na escola é um passo a mais rumo aos seus sonhos.','Você é capaz de muito mais do que imagina.','Estudar hoje é construir o seu amanhã.','Seja gentil com os colegas: todo mundo está aprendendo.','Persistência vence o cansaço. Bora!','Errar faz parte de aprender. Tente de novo!','Sua presença faz diferença na turma.','Pequenos esforços todos os dias geram grandes resultados.','Acredite no seu potencial!','Hoje é um bom dia para fazer uma pergunta em sala.','Chegar cedo é o primeiro passo de um dia produtivo.','Disciplina é escolher o que você quer mais, não o que você quer agora.','Conhecimento é algo que ninguém tira de você.','Faça hoje melhor do que ontem.'].join('\n'),
+ msgB:'Olá, {responsavel}. A {escola} gostaria de conversar sobre a frequência do(a) estudante {estudante} ({turma}): {atrasos} atraso(s) e {faltas} falta(s) no período de {periodo}. Podemos agendar uma conversa? Gestão escolar.'};
+const MEDIDAS=['','Orientação verbal ao estudante','Contato com o responsável','Advertência escrita','Encaminhado à coordenação','Reunião com o responsável','Encaminhado à rede de proteção','Outra'];
+
+let db=carregar();
+function migrar(c){c={...c};if('tolerancia' in c){if(c.entrada==='07:00'&&Number(c.tolerancia)===10)c.entrada='07:00';delete c.tolerancia;}if(c.msgA&&!c.msgA.includes('{aula2}')&&c.msgA.startsWith('Olá, {responsavel}. A {escola} informa que o(a) estudante {estudante} ({turma}) chegou atrasado(a) no dia {data}, às {hora}. Contamos'))delete c.msgA;return c;}
+function montar(d){d=d||{};return{cfg:{...DEF,...migrar(d.cfg||{})},alunos:Array.isArray(d.alunos)?d.alunos:[],reg:d.reg||{},env:d.env||{},pend:d.pend||{},fech:d.fech||{},nuvem:d.nuvem||{}};}
+function carregar(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&Array.isArray(d.alunos))return montar(d);}catch(e){}return montar();}
+let sujo=false;
+function salvar(interno){if(!interno)sujo=true;try{localStorage.setItem(KEY,JSON.stringify(db));}catch(e){alert('Não foi possível salvar no navegador. Faça um backup agora.');}if(!interno)agendarSync();}
+function pendente(k,id){db.pend[k+'|'+id]=1;}
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const dkey=(d=new Date())=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const hnow=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes());};
+const br=k=>{const[y,m,d]=k.split('-');return d+'/'+m+'/'+y;};
+const mins=h=>{const[a,b]=String(h||'0:0').split(':').map(Number);return a*60+b;};
+const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const novoId=()=>'a'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const cmpT=(a,b)=>String(a).localeCompare(String(b),'pt-BR',{numeric:true});
+function classificar(h){const m=mins(h),c=db.cfg;if(m<=mins(c.fimEntrada))return{s:'P'};if(m<=mins(c.tolAte))return{s:c.tolAtraso?'A':'P',t:true};return{s:'A',aula2:true};}
+function rotulo(r){return r.s==='A'?(r.t?'Atraso (tolerância)':'Atraso'):(r.t?'Tolerância':'OK');}
+function aluno(id){return db.alunos.find(a=>a.id===id);}
+function porMatricula(m){m=String(m).trim();return db.alunos.find(a=>String(a.matricula)===m);}
+function turmas(){return[...new Set(db.alunos.filter(a=>a.ativo!==false).map(a=>a.turma).filter(Boolean))].sort(cmpT);}
+function ativos(t){return db.alunos.filter(a=>a.ativo!==false&&(!t||a.turma===t)).sort((a,b)=>cmpT(a.turma||'',b.turma||'')||a.nome.localeCompare(b.nome,'pt-BR'));}
+function fone(t){let d=String(t||'').replace(/\D/g,'').replace(/^0+/,'');if(!d)return'';if(d.length===10||d.length===11)d='55'+d;return d;}
+function preencher(tpl,v){return tpl.replace(/\{(\w+)\}/g,(m,k)=>v[k]!==undefined?v[k]:m);}
+function wa(a,txt){const f=fone(a.telefone);return f?'https://wa.me/'+f+'?text='+encodeURIComponent(txt):'';}
+function diasLetivos(ini,fim){return Object.keys(db.reg).filter(k=>k>=ini&&k<=fim&&Object.values(db.reg[k]).some(r=>r.s==='P'||r.s==='A')).sort();}
+function opcoesTurma(sel,todas){const v=sel.value;sel.innerHTML=(todas?'<option value="">Todas as turmas</option>':'')+turmas().map(t=>`<option>${esc(t)}</option>`).join('');if([...sel.options].some(o=>o.value===v))sel.value=v;}
+function baixar(nome,conteudo,tipo){const u=URL.createObjectURL(new Blob([conteudo],{type:tipo}));const a=document.createElement('a');a.href=u;a.download=nome;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);}
+let actx;function beep(f,d){try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;g.gain.value=.15;o.connect(g);g.connect(actx.destination);o.start();o.stop(actx.currentTime+(d||.15));}catch(e){}}
+
+/* ---------- abas ---------- */
+let aba='portaria';
+$('#tabs').onclick=e=>{const t=e.target.dataset.t;if(!t)return;mostrar(t);};
+function mostrar(t){aba=t;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));document.querySelectorAll('main section').forEach(s=>s.classList.toggle('on',s.id==='s-'+t));if(t!=='portaria'&&scanner)pararCam();render();}
+function render(){
+ $('#hEscola').textContent=db.cfg.escola||'Presença Escolar';
+ $('#hData').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long'});
+ const ub=db.cfg.ultimoBackup;const dias=ub?Math.floor((Date.now()-new Date(ub))/864e5):null;
+ const np=Object.keys(db.pend).length,nv=db.cfg.sheetUrl?(np?' · ☁ '+np+' a enviar':db.nuvem.erro?' · ☁ erro':' · ☁ ok'):'';
+ $('#hBackup').innerHTML=db.alunos.length?'<span style="cursor:pointer" onclick="mostrar(\'config\')">'+(ub?(dias>7?'⚠ Último backup há '+dias+' dias':'Backup: '+new Date(ub).toLocaleDateString('pt-BR')):'⚠ Nenhum backup feito')+nv+'</span>':'';
+ if(aba==='portaria')renderPortaria();if(aba==='dia')renderDia();if(aba==='busca')renderBusca();if(aba==='alunos')renderAlunos();if(aba==='config')renderCfg();
+}
+
+/* ---------- portaria ---------- */
+let scanner=null,ultimoCod='',ultimoT=0,fbTimer;
+function avisoCam(msg){$('#camAviso').innerHTML=msg?'<div class="warnbox">'+msg+'</div>':'';}
+const AVISO_FOTO='Use o botão <b>Ler por foto</b>: ele abre a câmera do celular, você fotografa a carteirinha e o registro é feito na hora.';
+async function toggleCam(){if(scanner)return pararCam();
+ if(typeof Html5Qrcode==='undefined'){alert('O leitor de QR não carregou. O aparelho precisa de internet ao abrir o arquivo.');return;}
+ if(!db.alunos.length){alert('Cadastre os estudantes primeiro (aba Estudantes).');return;}
+ if(!window.isSecureContext||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+  avisoCam('Este navegador bloqueou a câmera ao vivo porque o arquivo foi aberto direto do aparelho, e não por um endereço https. '+AVISO_FOTO);return;}
+ scanner=new Html5Qrcode('reader');
+ try{const w=Math.min(260,Math.floor((document.getElementById('reader').clientWidth||300)*0.7));
+  await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:w,height:w},aspectRatio:1},lido,()=>{});
+  $('#bCam').textContent='Desligar câmera';avisoCam('');}
+ catch(e){try{scanner.clear();}catch(_){}scanner=null;
+  const neg=/NotAllowed|Permission/i.test(String(e&&e.name||e));
+  avisoCam(neg?'A permissão da câmera foi negada. Toque no cadeado ao lado do endereço e libere a câmera, ou '+AVISO_FOTO.replace('Use','use'):'Não foi possível abrir a câmera ao vivo ('+esc(e&&e.message||e)+'). '+AVISO_FOTO);}
+}
+async function lerFoto(inp){const f=inp.files[0];inp.value='';if(!f)return;
+ if(typeof Html5Qrcode==='undefined'){alert('O leitor de QR não carregou. O aparelho precisa de internet ao abrir o arquivo.');return;}
+ if(!db.alunos.length){alert('Cadastre os estudantes primeiro (aba Estudantes).');return;}
+ if(scanner)await pararCam();
+ try{const t=await new Html5Qrcode('readerFile').scanFile(f,false);ultimoCod='';lido(t);}
+ catch(e){feedback('err','QR Code não encontrado na foto','Aproxime a carteirinha, evite reflexo e tente de novo.');beep(220,.4);}
+}
+async function pararCam(){if(!scanner)return;try{await scanner.stop();scanner.clear();}catch(e){}scanner=null;$('#bCam').textContent='Ligar câmera';}
+function lido(txt){const t=Date.now();if(txt===ultimoCod&&t-ultimoT<5000)return;ultimoCod=txt;ultimoT=t;
+ const cod=String(txt).trim().replace(/^PRESEN[CÇ]A[^A-Za-z0-9]?/i,'').trim();const a=porMatricula(cod)||aluno(cod);
+ if(!a||a.ativo===false){feedback('err','Carteirinha não reconhecida','Código: '+cod);beep(220,.4);return;}
+ registrar(a);}
+function registrar(a){const k=dkey();db.reg[k]=db.reg[k]||{};const r=db.reg[k][a.id];
+ if(r&&(r.s==='P'||r.s==='A')){feedback('dup',a.nome,'Já registrado hoje às '+r.h);beep(440,.2);return;}
+ const h=hnow(),cl=classificar(h),s=cl.s;const nr={...(r||{}),s,h};delete nr.j;delete nr.t;if(cl.t)nr.t=true;db.reg[k][a.id]=nr;pendente(k,a.id);salvar();
+ const pn=a.nome.split(' ')[0],fr=frase();const sit=cl.aula2?' · ATRASADO — aguarde a 2ª aula ('+db.cfg.aula2+')':cl.t?' · na tolerância':' · no horário';feedback(cl.aula2?'A':(cl.t?'A':'P'),a.nome,(a.turma?a.turma+' · ':'')+h+sit,saudacao()+', '+pn+'!'+(fr?' '+fr:''),alertaSemana(a));beep(s==='A'?520:900,s==='A'?.35:.12);
+ $('#busca').value='';$('#resBusca').style.display='none';renderPortaria();}
+function feedback(c,n,s,m,al){const f=$('#fb');f.className=c;f.querySelector('.n').textContent=n;f.querySelector('.s').textContent=s;
+ const em=f.querySelector('.m'),ea=f.querySelector('.al');em.textContent=m||'';em.style.display=m?'block':'none';ea.textContent=al||'';ea.style.display=al?'block':'none';
+ clearTimeout(fbTimer);fbTimer=setTimeout(()=>f.className='',al?12000:(m?8000:6000));}
+function saudacao(){const h=new Date().getHours();return h<12?'Bom dia':h<18?'Boa tarde':'Boa noite';}
+function frase(){const l=String(db.cfg.frases||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean);return l.length?l[Math.floor(Math.random()*l.length)]:'';}
+function semanaAluno(id){const d=new Date(),dw=(d.getDay()+6)%7,seg=new Date(d);seg.setDate(d.getDate()-dw);const ini=dkey(seg),hoje=dkey();
+ let at=0,fa=0;diasLetivos(ini,hoje).forEach(k=>{const r=(db.reg[k]||{})[id];if(r&&r.s==='A')at++;else if(k<hoje&&!(r&&r.s==='P')&&!(r&&r.j))fa++;});return{at,fa};}
+function alertaSemana(a){const{at,fa}=semanaAluno(a.id),lA=Number(db.cfg.semA)||0,lF=Number(db.cfg.semF)||0;
+ if(!((lA&&at>=lA)||(lF&&fa>=lF)))return'';return'⚠ '+preencher(db.cfg.msgAl||DEF.msgAl,{nome:a.nome.split(' ')[0],atrasos:at,faltas:fa});}
+function buscarManual(){const q=norm($('#busca').value.trim());const box=$('#resBusca');if(q.length<2){box.style.display='none';return;}
+ const r=ativos().filter(a=>norm(a.nome).includes(q)||String(a.matricula).includes(q)).slice(0,8);
+ box.style.display='block';box.innerHTML=r.length?r.map(a=>`<div onclick="registrar(aluno('${a.id}'))"><b>${esc(a.nome)}</b> <span class="mut">${esc(a.turma)} · ${esc(a.matricula)}</span></div>`).join(''):'<div class="mut">Nenhum estudante encontrado</div>';}
+function desfazer(id){const k=dkey();if(!confirm('Desfazer a entrada de '+aluno(id).nome+'?'))return;const r=db.reg[k][id];delete r.s;delete r.h;if(!r.m&&!r.o)delete db.reg[k][id];pendente(k,id);salvar();renderPortaria();}
+function renderPortaria(){lembreteBackup();const k=dkey(),regs=db.reg[k]||{},lst=ativos();
+ let p=0,a=0;lst.forEach(x=>{const r=regs[x.id];if(r&&r.s==='P')p++;if(r&&r.s==='A')a++;});
+ $('#pPres').textContent=p;$('#pAtr').textContent=a;$('#pFalt').textContent=lst.length-p-a;
+ const c=db.cfg;
+ $('#horaInfo').textContent=`Leitor USB/Bluetooth: basta ler com esta aba aberta. No horário até ${c.fimEntrada} · tolerância até ${c.tolAte}${c.tolAtraso?' (conta como atraso)':''} · depois disso, atraso: entrada na 2ª aula às ${c.aula2}.`;
+ const ult=Object.entries(regs).filter(([,r])=>r.s==='P'||r.s==='A').sort((x,y)=>y[1].h.localeCompare(x[1].h)).slice(0,15);
+ $('#ultimas').innerHTML=ult.map(([id,r])=>{const x=aluno(id);if(!x)return'';return`<tr><td>${r.h}</td><td>${esc(x.nome)}</td><td class="hide-m">${esc(x.turma)}</td><td><span class="tag ${r.t&&r.s==='P'?'A':r.s}">${rotulo(r)}</span></td><td><button class="btn sm" onclick="desfazer('${id}')">Desfazer</button></td></tr>`;}).join('')||'<tr><td class="mut">Nenhuma entrada hoje.</td></tr>';}
+
+/* ---------- lista do dia ---------- */
+function envKey(k,tipo,id){db.env[k]=db.env[k]||{};return tipo+id;}
+function msgDia(a,k,tipo){const r=(db.reg[k]||{})[a.id]||{};return preencher(tipo==='A'?db.cfg.msgA:db.cfg.msgF,{responsavel:a.responsavel||'responsável',estudante:a.nome,turma:a.turma||'',data:br(k),hora:r.h||'',escola:db.cfg.escola,aula2:db.cfg.aula2});}
+function abrirWa(id,k,tipo){const a=aluno(id),u=wa(a,msgDia(a,k,tipo));if(!u)return;window.open(u,'_blank');db.env[k]=db.env[k]||{};db.env[k][tipo+id]=hnow();salvar();renderDia();}
+function listasDia(k,t){const regs=db.reg[k]||{},atr=[],fal=[],pre=[];ativos(t).forEach(a=>{const r=regs[a.id];if(r&&r.s==='A')atr.push(a);else if(r&&r.s==='P')pre.push(a);else fal.push(a);});atr.sort((x,y)=>cmpT(x.turma,y.turma)||regs[x.id].h.localeCompare(regs[y.id].h));return{regs,atr,fal,pre};}
+function fila(k,t){const{regs,atr,fal}=listasDia(k,t);const env=db.env[k]||{};return[...atr.map(a=>['A',a]),...fal.filter(a=>!(regs[a.id]&&regs[a.id].j)).map(a=>['F',a])].filter(([tp,a])=>fone(a.telefone)&&!env[tp+a.id]);}
+function enviarProximo(){const k=$('#diaData').value,f=fila(k,$('#diaTurma').value);if(!f.length){alert('Nenhuma mensagem pendente.');return;}const[tp,a]=f[0];abrirWa(a.id,k,tp);}
+function mudarStatus(id,k,v){db.reg[k]=db.reg[k]||{};const r=db.reg[k][id]||{};
+ if(v==='P'||v==='A'){r.s=v;r.h=r.h||(v==='A'?prompt('Horário de chegada (hh:mm):',hnow())||hnow():db.cfg.fimEntrada);delete r.j;if(v==='P')delete r.t;}
+ else{delete r.s;delete r.h;r.j=(v==='J');if(!r.j)delete r.j;}
+ if(Object.keys(r).length)db.reg[k][id]=r;else delete db.reg[k][id];pendente(k,id);salvar();renderDia();}
+function selStatus(id,k,atual){return`<select onchange="mudarStatus('${id}','${k}',this.value)" style="padding:4px">${[['P','No horário'],['A','Atrasado'],['F','Faltou'],['J','Falta justificada']].map(([v,l])=>`<option value="${v}"${v===atual?' selected':''}>${l}</option>`).join('')}</select>`;}
+function botaoWa(a,k,tp){const env=(db.env[k]||{})[tp+a.id];if(!fone(a.telefone))return'<span class="mut">sem telefone</span>';return`<button class="btn sm wa${env?' sent':''}" onclick="abrirWa('${a.id}','${k}','${tp}')">${env?'✓ Enviada '+env:'WhatsApp'}</button>`;}
+function renderDia(){const dd=$('#diaData');if(!dd.value)dd.value=dkey();opcoesTurma($('#diaTurma'),true);
+ const k=dd.value,t=$('#diaTurma').value,{regs,atr,fal,pre}=listasDia(k,t);const just=fal.filter(a=>regs[a.id]&&regs[a.id].j).length;
+ $('#diaStats').innerHTML=`<div class="stat ok"><b>${pre.length}</b><span>no horário</span></div><div class="stat warn"><b>${atr.length}</b><span>atrasados</span></div><div class="stat bad"><b>${fal.length-just}</b><span>faltosos</span></div><div class="stat"><b>${just}</b><span>faltas justificadas</span></div>`;
+ const lim=mins(db.cfg.tolAte),agora=new Date();
+ $('#diaAviso').innerHTML=(k===dkey()&&agora.getHours()*60+agora.getMinutes()<=lim+30)?'<div class="warnbox">A entrada ainda está aberta: a lista de faltosos pode mudar. Envie as mensagens de falta depois que a portaria fechar.</div>':'';
+ const f=fila(k,t);$('#filaInfo').textContent=f.length?`${f.length} mensagem(ns) pendente(s). "Enviar próxima" abre o WhatsApp já com o texto; toque em enviar e volte aqui.`:'Nenhuma mensagem pendente.';
+ $('#tAtr').innerHTML=atr.map(a=>`<tr><td><b>${esc(a.nome)}</b><br><span class="mut">${esc(a.turma)} · chegou ${regs[a.id].h}${regs[a.id].t?' (tolerância)':''}</span></td><td>${selStatus(a.id,k,'A')}</td><td>${botaoWa(a,k,'A')}</td></tr>`).join('')||'<tr><td class="mut">Nenhum atraso.</td></tr>';
+ $('#tFal').innerHTML=fal.map(a=>{const j=regs[a.id]&&regs[a.id].j;return`<tr><td><b>${esc(a.nome)}</b><br><span class="mut">${esc(a.turma)}${a.responsavel?' · '+esc(a.responsavel):''}</span></td><td>${selStatus(a.id,k,j?'J':'F')}</td><td>${j?'<span class="tag J">Justificada</span>':botaoWa(a,k,'F')}</td></tr>`;}).join('')||'<tr><td class="mut">Nenhuma falta.</td></tr>';
+ $('#sumPres').textContent=`Presentes no horário (${pre.length})`;
+ $('#tPres').innerHTML=pre.map(a=>`<tr><td>${esc(a.nome)} <span class="mut">${esc(a.turma)} · ${regs[a.id].h}${regs[a.id].t?' · tolerância':''}</span></td><td>${selStatus(a.id,k,'P')}</td></tr>`).join('');}
+function imprimirDia(){const k=$('#diaData').value,t=$('#diaTurma').value,{regs,atr,fal,pre}=listasDia(k,t);
+ const linha=(a,c)=>`<tr><td>${esc(a.turma)}</td><td>${esc(a.nome)}</td><td>${c}</td><td>${esc(a.responsavel||'')}</td><td>${esc(a.telefone||'')}</td></tr>`;
+ const cab='<tr><th>Turma</th><th>Estudante</th><th>Situação</th><th>Responsável</th><th>Telefone</th></tr>';
+ imprimir(`<h1>${esc(db.cfg.escola)} — Frequência de ${br(k)}</h1><p>${t?'Turma '+esc(t)+' · ':''}No horário: ${pre.length} · Atrasados: ${atr.length} · Faltosos: ${fal.length}</p>
+ <h2>Atrasados</h2><table>${cab}${atr.map(a=>linha(a,'Chegou '+regs[a.id].h)).join('')||'<tr><td colspan=5>Nenhum</td></tr>'}</table>
+ <h2>Faltosos</h2><table>${cab}${fal.map(a=>linha(a,regs[a.id]&&regs[a.id].j?'Justificada':'Falta')).join('')||'<tr><td colspan=5>Nenhum</td></tr>'}</table>`);}
+function csvDia(){const k=$('#diaData').value,t=$('#diaTurma').value,{regs}=listasDia(k,t);const nomes={P:'No horário',A:'Atrasado'};
+ const linhas=[['Data','Matrícula','Estudante','Turma','Situação','Hora','Responsável','Telefone']];
+ ativos(t).forEach(a=>{const r=regs[a.id]||{};linhas.push([br(k),a.matricula,a.nome,a.turma,nomes[r.s]||(r.j?'Falta justificada':'Falta'),r.h||'',a.responsavel||'',a.telefone||'']);});
+ baixar('frequencia_'+k+'.csv','\ufeff'+linhas.map(l=>l.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\r\n'),'text/csv;charset=utf-8');}
+
+/* ---------- busca ativa ---------- */
+function periodo(p){const d=new Date();let ini,fim;
+ if(p==='mes'){ini=new Date(d.getFullYear(),d.getMonth(),1);fim=new Date(d.getFullYear(),d.getMonth()+1,0);}
+ else{const dw=(d.getDay()+6)%7;ini=new Date(d);ini.setDate(d.getDate()-dw-(p==='semanaAnt'?7:0));fim=new Date(ini);fim.setDate(ini.getDate()+4);}
+ $('#bIni').value=dkey(ini);$('#bFim').value=dkey(fim);renderBusca();}
+function estatisticas(ini,fim,t){const dias=diasLetivos(ini,fim);
+ const lst=ativos(t).map(a=>{const at=[],fa=[];let med=0;dias.forEach(k=>{const r=(db.reg[k]||{})[a.id];if(r&&r.s==='A')at.push(k);else if(!(r&&r.s==='P')&&!(r&&r.j))fa.push(k);if(r&&r.m&&(r.s==='A'||!r.s))med++;});return{a,at,fa,med,alerta:at.length>Number(db.cfg.limite)};})
+  .filter(x=>x.at.length||x.fa.length).sort((x,y)=>y.alerta-x.alerta||(y.at.length+y.fa.length)-(x.at.length+x.fa.length)||x.a.nome.localeCompare(y.a.nome,'pt-BR'));
+ return{dias,lst};}
+function msgBusca(x,ini,fim){return preencher(db.cfg.msgB,{responsavel:x.a.responsavel||'responsável',estudante:x.a.nome,turma:x.a.turma||'',atrasos:x.at.length,faltas:x.fa.length,periodo:br(ini)+' a '+br(fim),escola:db.cfg.escola,data:br(dkey()),hora:hnow()});}
+function renderBusca(){if(!$('#bIni').value){periodo('semana');return;}opcoesTurma($('#bTurma'),true);
+ const ini=$('#bIni').value,fim=$('#bFim').value,{dias,lst}=estatisticas(ini,fim,$('#bTurma').value);
+ const al=lst.filter(x=>x.alerta).length;
+ $('#bStats').innerHTML=`<div class="stat"><b>${dias.length}</b><span>dias com registro</span></div><div class="stat warn"><b>${lst.reduce((s,x)=>s+x.at.length,0)}</b><span>atrasos</span></div><div class="stat bad"><b>${lst.reduce((s,x)=>s+x.fa.length,0)}</b><span>faltas</span></div><div class="stat bad"><b>${al}</b><span>em alerta (+${db.cfg.limite} atrasos)</span></div>`;
+ $('#bInfo').textContent=dias.length?'Só contam dias em que a portaria registrou entradas. Toque em "Detalhes" para registrar medidas.':'Nenhum dia com registro neste período.';
+ $('#tBusca').innerHTML=lst.map(x=>{const u=wa(x.a,msgBusca(x,ini,fim));return`<tr class="${x.alerta?'alert':''}"><td>${x.alerta?'⚠ ':''}${esc(x.a.nome)}</td><td class="hide-m">${esc(x.a.turma)}</td><td>${x.at.length}</td><td>${x.fa.length}</td><td class="hide-m">${x.med}</td><td style="white-space:nowrap"><button class="btn sm" onclick="detalhes('${x.a.id}')">Detalhes</button> ${u?`<a class="btn sm wa" href="${u}" target="_blank">WhatsApp</a>`:''}</td></tr>`;}).join('')||'<tr><td class="mut">Ninguém com atraso ou falta no período.</td></tr>';}
+function detalhes(id){const a=aluno(id),ini=$('#bIni').value,fim=$('#bFim').value,dias=diasLetivos(ini,fim);
+ const oc=dias.map(k=>{const r=(db.reg[k]||{})[id];if(r&&r.s==='P')return null;if(r&&r.s==='A')return{k,tp:'A',r};return{k,tp:'F',r:r||{}};}).filter(Boolean);
+ $('#mBox').innerHTML=`<div class="row" style="justify-content:space-between"><h2 style="margin:0">${esc(a.nome)}</h2><button class="btn sm" onclick="fecharModal()">Fechar</button></div>
+ <p class="mut">${esc(a.turma)} · Matrícula ${esc(a.matricula)} · ${esc(a.responsavel||'—')} · ${esc(a.telefone||'sem telefone')}</p>
+ <div class="tw"><table><thead><tr><th>Data</th><th>Ocorrência</th><th>Medida tomada</th></tr></thead><tbody>${oc.map(o=>`<tr><td>${br(o.k).slice(0,5)}</td><td>${o.tp==='A'?'<span class="tag A">Atraso '+o.r.h+'</span>':(o.r.j?'<span class="tag J">Falta just.</span>':'<span class="tag F">Falta</span>')}</td><td><select onchange="medida('${id}','${o.k}','m',this.value)" style="width:100%;margin-bottom:4px">${MEDIDAS.map(m=>`<option${m===(o.r.m||'')?' selected':''}>${esc(m)}</option>`).join('')}</select><input placeholder="Observação" value="${esc(o.r.o||'')}" onchange="medida('${id}','${o.k}','o',this.value)" style="width:100%"></td></tr>`).join('')||'<tr><td class="mut" colspan=3>Sem ocorrências no período.</td></tr>'}</tbody></table></div>`;
+ $('#modal').classList.add('on');}
+function medida(id,k,campo,v){db.reg[k]=db.reg[k]||{};const r=db.reg[k][id]||{};if(v)r[campo]=v;else delete r[campo];if(Object.keys(r).length)db.reg[k][id]=r;else delete db.reg[k][id];pendente(k,id);salvar();}
+function fecharModal(){$('#modal').classList.remove('on');if(aba==='busca')renderBusca();}
+function imprimirSemanal(){const ini=$('#bIni').value,fim=$('#bFim').value,t=$('#bTurma').value,{dias,lst}=estatisticas(ini,fim,t);
+ const med=(x)=>{const out=[];dias.forEach(k=>{const r=(db.reg[k]||{})[x.a.id];if(r&&(r.m||r.o))out.push(br(k).slice(0,5)+': '+[r.m,r.o].filter(Boolean).join(' — '));});return out.map(esc).join('<br>');};
+ imprimir(`<h1>${esc(db.cfg.escola)} — Relatório de busca ativa</h1><p>Período: ${br(ini)} a ${br(fim)} · ${dias.length} dia(s) com registro${t?' · Turma '+esc(t):''} · Alerta: mais de ${db.cfg.limite} atrasos</p>
+ <table><tr><th></th><th>Estudante</th><th>Turma</th><th>Atrasos (dias)</th><th>Faltas (dias)</th><th>Medidas</th><th>Responsável / telefone</th></tr>
+ ${lst.map(x=>`<tr><td>${x.alerta?'⚠':''}</td><td>${esc(x.a.nome)}</td><td>${esc(x.a.turma)}</td><td>${x.at.length}${x.at.length?' ('+x.at.map(k=>br(k).slice(0,5)).join(', ')+')':''}</td><td>${x.fa.length}${x.fa.length?' ('+x.fa.map(k=>br(k).slice(0,5)).join(', ')+')':''}</td><td>${med(x)}</td><td>${esc(x.a.responsavel||'')}<br>${esc(x.a.telefone||'')}</td></tr>`).join('')||'<tr><td colspan=7>Nenhuma ocorrência</td></tr>'}</table>
+ <p style="margin-top:30px">Recife, ${new Date().toLocaleDateString('pt-BR')}</p><p style="margin-top:40px">______________________________<br>Responsável pela busca ativa</p>`);}
+
+/* ---------- estudantes ---------- */
+function splitLinha(l,sep){const out=[];let cur='',q=false;for(let i=0;i<l.length;i++){const c=l[i];if(c==='"'){if(q&&l[i+1]==='"'){cur+='"';i++;}else q=!q;}else if(c===sep&&!q){out.push(cur.trim());cur='';}else cur+=c;}out.push(cur.trim());return out;}
+function parseCSV(txt){const linhas=txt.split(/\r?\n/).filter(l=>l.trim());if(!linhas.length)return[];
+ const l0=linhas[0],cont=s=>l0.split(s).length;const sep=[';','\t',','].sort((a,b)=>cont(b)-cont(a))[0];
+ let cols=['matricula','nome','turma','responsavel','telefone'],ini=0;const h=splitLinha(l0,sep).map(norm);
+ if(h.some(c=>c.includes('nome')||c.includes('estudante')||c.includes('aluno')||c.includes('matr')||c.includes('telefone')||c.includes('respons'))){ini=1;cols=h.map(c=>c.includes('respons')||c.includes('mae')||c.includes('pai')?'responsavel':c.includes('matr')||c==='ra'||c.includes('codigo')?'matricula':c.includes('turma')||c.includes('serie')||c.includes('classe')?'turma':c.includes('tel')||c.includes('fone')||c.includes('whats')||c.includes('cel')||c.includes('contato')?'telefone':c.includes('nome')||c.includes('estudante')||c.includes('aluno')?'nome':'');}
+ return linhas.slice(ini).map(l=>{const v=splitLinha(l,sep),o={};cols.forEach((c,i)=>{if(c&&v[i]!==undefined&&!o[c])o[c]=v[i];});return o;}).filter(o=>o.nome||o.matricula);}
+function importarDados(lst,silencioso){let n=0,u=0,ig=0;lst.forEach(o=>{const ex=o.matricula&&porMatricula(o.matricula);
+ if(ex){Object.assign(ex,{nome:o.nome||ex.nome,turma:o.turma||ex.turma,responsavel:o.responsavel||ex.responsavel,telefone:o.telefone||ex.telefone,ativo:true});u++;}
+ else if(!o.nome){ig++;}
+ else{db.alunos.push({id:novoId(),matricula:o.matricula||String(Date.now()).slice(-6)+n,nome:o.nome,turma:o.turma||'',responsavel:o.responsavel||'',telefone:o.telefone||'',ativo:true});n++;}});
+ salvar();render();if(!silencioso)alert(`${n} estudante(s) cadastrado(s), ${u} atualizado(s).`+(ig?` ${ig} linha(s) ignorada(s): matrícula não encontrada.`:''));}
+function importar(){const l=parseCSV($('#csvIn').value);if(!l.length){alert('Nenhuma linha válida encontrada.');return;}importarDados(l);$('#csvIn').value='';}
+function importarArquivo(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{let t=r.result;if(t.includes('\ufffd')){const r2=new FileReader();r2.onload=()=>{const l=parseCSV(r2.result);l.length?importarDados(l):alert('Nenhuma linha válida.');};r2.readAsText(f,'ISO-8859-1');return;}const l=parseCSV(t);l.length?importarDados(l):alert('Nenhuma linha válida.');};r.readAsText(f,'UTF-8');inp.value='';}
+function exemplo(){importarDados([['1001','Ana Clara Souza','1º A','Maria Souza','81999990001'],['1002','Bruno Lima','1º A','José Lima','81999990002'],['1003','Carla Mendes','1º A','Rita Mendes',''],['2001','Davi Oliveira','2º B','Paula Oliveira','81999990004'],['2002','Elisa Ramos','2º B','Marcos Ramos','81999990005'],['2003','Felipe Araújo','2º B','Sandra Araújo','81999990006']].map(([matricula,nome,turma,responsavel,telefone])=>({matricula,nome,turma,responsavel,telefone})));}
+function renderAlunos(){opcoesTurma($('#aTurma'),true);const q=norm($('#aBusca').value),t=$('#aTurma').value;
+ const l=ativos(t).filter(a=>!q||norm(a.nome).includes(q)||String(a.matricula).includes(q));
+ $('#aTitulo').textContent=`Estudantes (${l.length})`;$('#bExemplo').style.display=db.alunos.length?'none':'';
+ $('#tAlunos').innerHTML=l.map(a=>`<tr><td>${esc(a.matricula)}</td><td>${esc(a.nome)}</td><td>${esc(a.turma)}</td><td class="hide-m">${esc(a.responsavel)}<br><span class="mut">${esc(a.telefone)}${a.telefone&&!fone(a.telefone)?' ⚠':''}</span></td><td style="white-space:nowrap"><button class="btn sm" onclick="editarAluno('${a.id}')">Editar</button> <button class="btn sm" onclick="imprimirCarteirinhas('${a.id}')">Carteirinha</button></td></tr>`).join('')||'<tr><td class="mut">Nenhum estudante cadastrado.</td></tr>';}
+function editarAluno(id){const a=id?aluno(id):{matricula:'',nome:'',turma:'',responsavel:'',telefone:''};
+ $('#mBox').innerHTML=`<h2>${id?'Editar':'Cadastrar'} estudante</h2><div class="row">${[['matricula','Matrícula'],['nome','Nome'],['turma','Turma'],['responsavel','Responsável'],['telefone','Telefone (WhatsApp, com DDD)']].map(([c,l])=>`<label class="f">${l}<input id="e_${c}" value="${esc(a[c])}"></label>`).join('')}</div>
+ <div class="row" style="margin-top:12px"><button class="btn pri" onclick="salvarAluno('${id||''}')">Salvar</button><button class="btn" onclick="fecharModal()">Cancelar</button>${id?`<span style="flex:1"></span><button class="btn danger" onclick="removerAluno('${id}')">Remover (transferido/evadido)</button>`:''}</div>`;
+ $('#modal').classList.add('on');}
+function salvarAluno(id){const v={};['matricula','nome','turma','responsavel','telefone'].forEach(c=>v[c]=$('#e_'+c).value.trim());
+ if(!v.nome||!v.matricula){alert('Informe nome e matrícula.');return;}const dup=porMatricula(v.matricula);if(dup&&dup.id!==id){alert('Já existe estudante com essa matrícula.');return;}
+ if(id)Object.assign(aluno(id),v);else db.alunos.push({id:novoId(),...v,ativo:true});salvar();fecharModal();render();}
+function removerAluno(id){if(!confirm('Remover este estudante das listas? O histórico de frequência é mantido.'))return;aluno(id).ativo=false;salvar();fecharModal();render();}
+function imprimirCarteirinhas(id){const l=id?[aluno(id)]:ativos($('#aTurma').value).filter(a=>!norm($('#aBusca').value)||norm(a.nome).includes(norm($('#aBusca').value)));
+ if(!l.length){alert('Nenhum estudante no filtro.');return;}if(typeof QRCode==='undefined'){alert('O gerador de QR não carregou. Abra o arquivo com internet.');return;}
+ const pa=$('#printArea');pa.innerHTML='<div class="cards">'+l.map(a=>`<div class="ccard"><div class="q" id="q_${a.id}"></div><div class="t"><div class="e">${esc(db.cfg.escola)}</div><b>${esc(a.nome)}</b>Turma: ${esc(a.turma)}<br>Matrícula: ${esc(a.matricula)}<br><span class="e">Apresente na entrada</span></div></div>`).join('')+'</div>';
+ l.forEach(a=>new QRCode(document.getElementById('q_'+a.id),{text:'PRESENCA:'+a.matricula,width:240,height:240,correctLevel:QRCode.CorrectLevel.M}));
+ setTimeout(()=>window.print(),700);}
+function imprimir(html){$('#printArea').innerHTML=html;setTimeout(()=>window.print(),100);}
+
+/* ---------- configurações ---------- */
+function renderCfg(){const c=db.cfg;$('#cHoraBk').value=c.horaBackup;$('#cUrl').value=c.sheetUrl;$('#cChave').value=c.sheetChave;infoNuvem();infoPersist();$('#cEscola').value=c.escola;$('#cEntrada').value=c.entrada;$('#cFim').value=c.fimEntrada;$('#cTolAte').value=c.tolAte;$('#cAula2').value=c.aula2;$('#cTolAtr').checked=!!c.tolAtraso;$('#cLim').value=c.limite;$('#cMsgA').value=c.msgA;$('#cMsgF').value=c.msgF;$('#cMsgB').value=c.msgB;$('#cFrases').value=c.frases;$('#cSemA').value=c.semA;$('#cSemF').value=c.semF;$('#cMsgAl').value=c.msgAl;}
+function salvarCfg(){Object.assign(db.cfg,{horaBackup:$('#cHoraBk').value||'12:00',escola:$('#cEscola').value.trim()||DEF.escola,entrada:$('#cEntrada').value||'07:00',fimEntrada:$('#cFim').value||'07:30',tolAte:$('#cTolAte').value||'07:45',aula2:$('#cAula2').value||'08:20',tolAtraso:$('#cTolAtr').checked,limite:Math.max(0,Number($('#cLim').value)||0),msgA:$('#cMsgA').value,msgF:$('#cMsgF').value,msgB:$('#cMsgB').value,frases:$('#cFrases').value,semA:Math.max(0,Number($('#cSemA').value)||0),semF:Math.max(0,Number($('#cSemF').value)||0),msgAl:$('#cMsgAl').value||DEF.msgAl});salvar();render();alert('Configurações salvas.');}
+function jsonBackup(){const c={...db};delete c.pend;delete c.fech;return JSON.stringify(c);}
+async function compartilharBackup(){const nome='backup_presenca_'+dkey()+'.json',txt=jsonBackup();
+ try{const f=new File([txt],nome,{type:'application/json'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'Backup presença '+br(dkey())});db.cfg.ultimoBackup=new Date().toISOString();salvar(true);render();return;}}
+ catch(e){if(e&&e.name==='AbortError')return;}
+ exportar();}
+function lembreteBackup(){const el=$('#bkLembrete');if(!el)return;const k=dkey(),ub=db.cfg.ultimoBackup,agora=new Date();
+ const temHoje=Object.values(db.reg[k]||{}).some(r=>r.s);const feitoHoje=ub&&dkey(new Date(ub))===k;
+ const show=temHoje&&!feitoHoje&&agora.getHours()*60+agora.getMinutes()>=mins(db.cfg.horaBackup);
+ el.innerHTML=show?'<div class="warnbox row" style="justify-content:space-between"><span><b>Fim do turno:</b> envie o backup de hoje para não perder os registros.</span><button class="btn pri sm" onclick="compartilharBackup()">Enviar backup agora</button></div>':'';}
+let persistido=null;
+async function pedirPersist(){try{if(navigator.storage&&navigator.storage.persist){persistido=await navigator.storage.persisted();if(!persistido)persistido=await navigator.storage.persist();}}catch(e){}if(aba==='config')infoPersist();}
+function infoPersist(){const el=$('#persistInfo');if(!el)return;el.innerHTML=persistido===true?'✓ Armazenamento protegido: o navegador não apaga estes dados sozinho para liberar espaço.':persistido===false?'⚠ O navegador não liberou o armazenamento protegido. Adicione o app à tela inicial e mantenha os backups em dia.':'';}
+/* ---------- nuvem (planilha Google) ---------- */
+let syncTimer=null,sincronizando=false;
+function agendarSync(){if(!db.cfg.sheetUrl)return;clearTimeout(syncTimer);syncTimer=setTimeout(()=>sincronizar(false),3000);}
+function situacaoTxt(r){if(r&&r.s)return rotulo(r).replace('OK','No horário');return r&&r.j?'Falta justificada':'Falta';}
+function fecharDias(){const hoje=dkey();Object.keys(db.reg).forEach(k=>{if(k>=hoje||db.fech[k])return;if(!Object.values(db.reg[k]).some(r=>r.s))return;
+ ativos().forEach(a=>{const r=db.reg[k][a.id];if(!(r&&r.s))pendente(k,a.id);});db.fech[k]=1;});}
+async function chamar(corpo){const res=await fetch(db.cfg.sheetUrl,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({...corpo,chave:db.cfg.sheetChave}),redirect:'follow'});
+ const j=await res.json();if(!j.ok)throw new Error(j.erro==='chave'?'chave de acesso incorreta':(j.erro||'erro na planilha'));return j;}
+async function sincronizar(manual){if(!db.cfg.sheetUrl){if(manual)alert('Configure o endereço da planilha primeiro.');return;}
+ if(sincronizando)return;if(!navigator.onLine){db.nuvem.erro='sem internet';if(manual)alert('Sem internet. Os dados ficam guardados e serão enviados depois.');render();return;}
+ sincronizando=true;try{fecharDias();
+  let chaves=Object.keys(db.pend);
+  while(chaves.length){const lote=chaves.slice(0,200);
+   const linhas=lote.map(c=>{const[k,id]=c.split('|'),a=aluno(id)||{},r=(db.reg[k]||{})[id];return{chave:k+'|'+(a.matricula||id),data:br(k),matricula:a.matricula||'',nome:a.nome||'',turma:a.turma||'',situacao:situacaoTxt(r),hora:(r&&r.h)||'',medida:(r&&r.m)||'',obs:(r&&r.o)||''};});
+   await chamar({acao:'registros',linhas});lote.forEach(c=>delete db.pend[c]);salvar(true);chaves=Object.keys(db.pend);}
+  const ult=db.nuvem.backup?Date.parse(db.nuvem.backup):0;
+  if(db.alunos.length&&(manual||sujo||Date.now()-ult>36e5)&&(manual||Date.now()-ult>3e5||!ult)){sujo=false;await chamar({acao:'backup',dados:jsonBackup()});db.nuvem.backup=new Date().toISOString();db.cfg.ultimoBackup=db.nuvem.backup;}
+  db.nuvem.ultimo=new Date().toISOString();db.nuvem.erro='';salvar(true);if(manual)alert('Sincronizado com a planilha.');}
+ catch(e){db.nuvem.erro=String(e&&e.message||e);salvar(true);if(manual)alert('Não foi possível sincronizar: '+db.nuvem.erro+'\nOs dados continuam guardados no aparelho.');}
+ finally{sincronizando=false;render();}}
+function infoNuvem(){const el=$('#nuvemInfo');if(!el)return;const n=db.nuvem,np=Object.keys(db.pend).length;
+ el.innerHTML=!db.cfg.sheetUrl?'Desligado.':(n.erro?'⚠ Último erro: '+esc(n.erro)+'. ':'')+(n.ultimo?'Última sincronização: '+new Date(n.ultimo).toLocaleString('pt-BR')+'. ':'Ainda não sincronizado. ')+(n.backup?'Cópia completa: '+new Date(n.backup).toLocaleString('pt-BR')+'. ':'')+np+' registro(s) pendente(s).';}
+async function salvarNuvem(){const u=$('#cUrl').value.trim(),c=$('#cChave').value.trim();
+ if(u&&!/^https:\/\/script\.google\.com\/.+\/exec$/.test(u)){alert('O endereço deve começar com https://script.google.com/ e terminar em /exec.');return;}
+ db.cfg.sheetUrl=u;db.cfg.sheetChave=c;if(u&&!db.nuvem.ultimo)Object.keys(db.reg).forEach(k=>Object.keys(db.reg[k]).forEach(id=>pendente(k,id)));salvar(true);if(!u){render();return;}
+ try{await chamar({acao:'teste'});db.nuvem.erro='';salvar(true);if(!db.alunos.length){if(confirm('Conexão OK. Este aparelho está vazio: deseja trazer a cópia guardada na planilha?')){db.nuvem.ultimo='';restaurarNuvemSem();}render();return;}alert('Conexão com a planilha OK. Enviando os dados...');sincronizar(true);}
+ catch(e){db.nuvem.erro=String(e&&e.message||e);salvar(true);render();alert('Não foi possível conectar: '+db.nuvem.erro);}}
+async function restaurarNuvem(){if(!db.cfg.sheetUrl){alert('Configure o endereço da planilha primeiro.');return;}
+ if(!confirm('Substituir todos os dados deste aparelho pela cópia guardada na planilha?'))return;restaurarNuvemSem();}
+async function restaurarNuvemSem(){
+ try{const j=await chamar({acao:'restaurar'});if(!j.dados)throw new Error('a planilha ainda não tem cópia');const d=JSON.parse(j.dados);if(!Array.isArray(d.alunos))throw new Error('cópia inválida');
+  const u=db.cfg.sheetUrl,c=db.cfg.sheetChave;db=montar(d);db.cfg.sheetUrl=u;db.cfg.sheetChave=c;db.nuvem={backup:new Date().toISOString(),ultimo:new Date().toISOString()};salvar(true);render();alert('Dados restaurados: '+db.alunos.length+' estudantes.');}
+ catch(e){alert('Não foi possível restaurar: '+(e&&e.message||e));}}
+function exportar(){db.cfg.ultimoBackup=new Date().toISOString();salvar(true);baixar('backup_presenca_'+dkey()+'.json',JSON.stringify(db),'application/json');render();}
+function restaurar(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.alunos))throw 0;if(!confirm('Substituir todos os dados atuais pelo backup?'))return;db=montar(d);db.pend={};db.fech={};salvar();render();alert('Backup restaurado.');}catch(e){alert('Arquivo de backup inválido.');}};r.readAsText(f);inp.value='';}
+function apagarTudo(){if(!confirm('Apagar TODOS os estudantes e registros deste aparelho?'))return;if(prompt('Digite APAGAR para confirmar')!=='APAGAR')return;db=montar();salvar(true);render();}
+
+/* ---------- leitor físico (USB / 2.4G / Bluetooth, modo teclado) ---------- */
+let kbBuf='',kbT=0,kbFast=0;
+document.addEventListener('keydown',e=>{
+ if(aba!=='portaria'||$('#modal').classList.contains('on'))return;
+ const t=Date.now(),dt=t-kbT;kbT=t;
+ if(e.key==='Enter'){
+  const ok=kbBuf.length>=3&&kbFast>=kbBuf.length-2;
+  if(ok){e.preventDefault();const b=$('#busca');if(document.activeElement===b){b.value='';$('#resBusca').style.display='none';}lido(kbBuf);}
+  kbBuf='';kbFast=0;return;}
+ if(e.key.length!==1){return;}
+ if(dt>80){kbBuf='';kbFast=0;}
+ if(kbBuf&&dt<=50)kbFast++;
+ kbBuf+=e.key;
+},true);
+
+const SEED=null,SEED_VER='';
+if(SEED&&db.seedVer!==SEED_VER){importarDados(SEED.map(([matricula,nome,turma])=>({matricula,nome,turma})),true);db.seedVer=SEED_VER;salvar();}
+render();pedirPersist();
+setInterval(()=>{if(aba==='portaria')renderPortaria();},60000);
+setInterval(()=>{if(db.cfg.sheetUrl&&(Object.keys(db.pend).length||sujo))sincronizar(false);},120000);
+window.addEventListener('online',()=>sincronizar(false));
+setTimeout(()=>sincronizar(false),2000);
+</script>
+</body>
+</html>
